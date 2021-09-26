@@ -3,7 +3,7 @@ using MSCLoader;
 using TommoJProductions.ModApi.Attachable;
 using static TommoJProductions.ModApi.Attachable.Part;
 
-namespace SecureCarJack
+namespace TommoJProductions.SecureCarJack
 {
     public class SecureCarJackMod : Mod
     {
@@ -14,12 +14,13 @@ namespace SecureCarJack
         public override string ID => "SecureCarJack";
         public override string Name => "Secure Car Jack"; 
         public override string Author => "tommojphillips"; 
-        public override string Version => "1.0.0";
+        public override string Version => "1.0.1";
         
         private Part carJackPart;
 
         private PlayMakerFSM foldFsm;
 
+        private FixScale fixScaleRef;
         /// <summary>
         /// Occurs on game start.
         /// </summary>
@@ -46,6 +47,8 @@ namespace SecureCarJack
         private void CarJackPart_onDisassemble()
         {
             foldFsm.enabled = true;
+            Object.Destroy(fixScaleRef);
+            carJackPart.transform.localScale = Vector3.one;
         }
 
         private void CarJackPart_onAssemble()
@@ -55,6 +58,9 @@ namespace SecureCarJack
                 carJackPart.disassemble();
                 return;
             }
+            fixScaleRef = carJackPart.gameObject.AddComponent<FixScale>();
+            fixScaleRef.modifier = new Vector3(4.627122f, 4.974365f, 4.565181f);
+            fixScaleRef.onStart = true;
             foldFsm.enabled = false;
         }
 
