@@ -1,6 +1,7 @@
-﻿using UnityEngine;
-using MSCLoader;
+﻿using MSCLoader;
+using TommoJProductions.ModApi;
 using TommoJProductions.ModApi.Attachable;
+using UnityEngine;
 using static TommoJProductions.ModApi.Attachable.Part;
 
 namespace TommoJProductions.SecureCarJack
@@ -12,21 +13,23 @@ namespace TommoJProductions.SecureCarJack
         public const string FILE_NAME = "SecureCarJack.txt";
 
         public override string ID => "SecureCarJack";
-        public override string Name => "Secure Car Jack"; 
-        public override string Author => "tommojphillips"; 
-        public override string Version => "1.0.1";
-        
+        public override string Name => "Secure Car Jack";
+        public override string Author => "tommojphillips";
+        public override string Version => VersionInfo.version;
+
         private Part carJackPart;
 
         private PlayMakerFSM foldFsm;
 
-        private FixScale fixScaleRef;
         /// <summary>
         /// Occurs on game start.
         /// </summary>
         public override void OnLoad()
         {
             // Written, 07.03.2019 | Modified, 25.09.2021
+
+
+            GameObject.Find("ITEMS").GetPlayMaker("SaveItems").GetState("Save game").prependNewAction(fixTransform);
 
             GameObject satsuma = GameObject.Find("SATSUMA(557kg, 248)");
             GameObject carJackGo = GameObject.Find("car jack(itemx)");
@@ -35,33 +38,16 @@ namespace TommoJProductions.SecureCarJack
 
             Trigger trigger = new Trigger("carJackTrigger", satsuma, new Vector3(-0.3770001f, 0f, -1.42f), new Vector3(0, 285, 0), new Vector3(0.2f, 0.2f, 0.24f));
             AssemblyTypeJointSettings atjs = new AssemblyTypeJointSettings(satsuma.GetComponent<Rigidbody>());
-            PartSettings partSettings = new PartSettings() { assembleType = AssembleType.joint, assemblyTypeJointSettings = atjs, setPositionRotationOnInitialisePart = false, installedPartToLayer = TommoJProductions.ModApi.LayerMasksEnum.DontCollide };
+            PartSettings partSettings = new PartSettings() { assembleType = AssembleType.joint, assemblyTypeJointSettings = atjs, setPositionRotationOnInitialisePart = false };
             carJackPart = carJackGo.AddComponent<Part>();
             carJackPart.defaultSaveInfo = new PartSaveInfo() { installed = true };
-            carJackPart.onAssemble += CarJackPart_onAssemble;
-            carJackPart.onDisassemble += CarJackPart_onDisassemble;
             carJackPart.initPart(loadData(), partSettings, trigger);
             ModConsole.Print(string.Format("{0} v{1}: Loaded.", Name, Version));
         }
 
-        private void CarJackPart_onDisassemble()
+        private void fixTransform()
         {
-            foldFsm.enabled = true;
-            Object.Destroy(fixScaleRef);
             carJackPart.transform.localScale = Vector3.one;
-        }
-
-        private void CarJackPart_onAssemble()
-        {
-            if (foldFsm.FsmVariables.BoolVariables[0].Value)
-            {
-                carJackPart.disassemble();
-                return;
-            }
-            fixScaleRef = carJackPart.gameObject.AddComponent<FixScale>();
-            fixScaleRef.modifier = new Vector3(4.627122f, 4.974365f, 4.565181f);
-            fixScaleRef.onStart = true;
-            foldFsm.enabled = false;
         }
 
         /// <summary>
