@@ -28,7 +28,6 @@ namespace TommoJProductions.SecureCarJack
         {
             // Written, 07.03.2019 | Modified, 25.09.2021
 
-
             GameObject.Find("ITEMS").GetPlayMaker("SaveItems").GetState("Save game").prependNewAction(fixTransform);
 
             GameObject satsuma = GameObject.Find("SATSUMA(557kg, 248)");
@@ -41,10 +40,24 @@ namespace TommoJProductions.SecureCarJack
             PartSettings partSettings = new PartSettings() { assembleType = AssembleType.joint, assemblyTypeJointSettings = atjs, setPositionRotationOnInitialisePart = false };
             carJackPart = carJackGo.AddComponent<Part>();
             carJackPart.defaultSaveInfo = new PartSaveInfo() { installed = true };
+            carJackPart.onAssemble += carJackPart_onAssemble;
             carJackPart.initPart(loadData(), partSettings, trigger);
+            carJackPart.onDisassemble += carJackPart_onDisassemble;
             ModConsole.Print(string.Format("{0} v{1}: Loaded.", Name, Version));
         }
-
+        private void carJackPart_onDisassemble()
+        {
+            foldFsm.enabled = true;
+        }
+        private void carJackPart_onAssemble()
+        {
+            if (foldFsm.FsmVariables.BoolVariables[0].Value)
+            {
+                carJackPart.disassemble();
+                return;
+            }
+            foldFsm.enabled = false;
+        }
         private void fixTransform()
         {
             carJackPart.transform.localScale = Vector3.one;
