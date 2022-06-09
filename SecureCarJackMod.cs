@@ -42,9 +42,24 @@ namespace TommoJProductions.SecureCarJack
             carJackPart = carJackGo.AddComponent<Part>();
             carJackPart.defaultSaveInfo = new PartSaveInfo() { installed = true };
             carJackPart.initPart(loadData(), partSettings, trigger);
+            carJackPart.onAssemble += carJackPart_onAssemble;
+            carJackPart.onDisassemble += carJackPart_onDisassemble;
             ModConsole.Print(string.Format("{0} v{1}: Loaded.", Name, Version));
         }
+        private void carJackPart_onDisassemble()
+        {
+            foldFsm.enabled = true;
+        }
 
+        private void carJackPart_onAssemble()
+        {
+            if (foldFsm.FsmVariables.BoolVariables[0].Value)
+            {
+                carJackPart.disassemble();
+                return;
+            }
+            foldFsm.enabled = false;
+        }
         private void fixTransform()
         {
             carJackPart.transform.localScale = Vector3.one;
